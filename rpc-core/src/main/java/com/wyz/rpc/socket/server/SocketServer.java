@@ -1,5 +1,6 @@
-package com.wyz.rpc.server;
+package com.wyz.rpc.socket.server;
 
+import com.wyz.rpc.RequestHandler;
 import com.wyz.rpc.registry.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +11,10 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 /**
- * 使用一个ServerSocket监听某个端口，循环接收连接请求，如果发来了请求就创建一个线程，在新线程中处理调用。这里创建线程采用线程池
+ * Socket方式远程方法调用的提供者（服务端）
  */
-public class RpcServer {
-    private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
+public class SocketServer {
+    private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
     private final ExecutorService threadPool;
     private final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 50;
@@ -22,7 +23,8 @@ public class RpcServer {
 
     private RequestHandler requestHandler = new RequestHandler();
     private final ServiceRegistry serviceRegistry;
-    public RpcServer(ServiceRegistry serviceRegistry) {
+
+    public SocketServer(ServiceRegistry serviceRegistry) {
         this.serviceRegistry = serviceRegistry;
         BlockingQueue<Runnable> workingQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
         ThreadFactory threadFactory = Executors.defaultThreadFactory();

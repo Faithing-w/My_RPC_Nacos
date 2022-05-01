@@ -1,4 +1,4 @@
-package com.wyz.rpc.server;
+package com.wyz.rpc;
 
 import com.wyz.rpc.entity.RpcRequest;
 import com.wyz.rpc.entity.RpcResponse;
