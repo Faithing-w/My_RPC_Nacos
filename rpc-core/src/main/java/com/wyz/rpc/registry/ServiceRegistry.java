@@ -1,11 +1,18 @@
 package com.wyz.rpc.registry;
 
+import java.net.InetSocketAddress;
+
 /**
- * 将服务的注册和服务器启动分离，使得服务端可以提供多个服务
+ * 服务注册中心通用接口
  */
 public interface ServiceRegistry {
-    //注册服务信息
-    <T> void register(T service);
-    //获取服务信息
-    Object getService(String serviceName);
+    /**
+     * 将一个服务注册进注册表
+     */
+    void register(String serviceName, InetSocketAddress inetSocketAddress);
+
+    /**
+     * 根据服务名称查找服务实体
+     */
+    InetSocketAddress lookupService(String serviceName);
 }
