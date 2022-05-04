@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-public class KryoSerializer implements CommonSerializer{
+public class KryoSerializer implements CommonSerializer {
     private static final Logger logger = LoggerFactory.getLogger(KryoSerializer.class);
 
     private static final ThreadLocal<Kryo> kryoThreadLocal = ThreadLocal.withInitial(() -> {
@@ -28,7 +28,7 @@ public class KryoSerializer implements CommonSerializer{
     @Override
     public byte[] serialize(Object obj) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             Output output = new Output(byteArrayOutputStream)){
+             Output output = new Output(byteArrayOutputStream)) {
             Kryo kryo = kryoThreadLocal.get();
             kryo.writeObject(output, obj);
             kryoThreadLocal.remove();

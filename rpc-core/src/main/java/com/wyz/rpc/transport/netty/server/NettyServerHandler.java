@@ -2,10 +2,9 @@ package com.wyz.rpc.transport.netty.server;
 
 import com.wyz.rpc.entity.RpcRequest;
 import com.wyz.rpc.entity.RpcResponse;
+import com.wyz.rpc.factory.SingletonFactory;
+import com.wyz.rpc.factory.ThreadPoolFactory;
 import com.wyz.rpc.handler.RequestHandler;
-import com.wyz.rpc.util.ThreadPoolFactory;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -14,14 +13,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Netty中处理RpcRequest的Handler
+ */
 public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
-    private static RequestHandler requestHandler;
-    private static final String THREAD_NAME_PREFIX = "netty-server-handler";
-    private static final ExecutorService threadPool;
 
-    static {
-        requestHandler = new RequestHandler();
+    private static final String THREAD_NAME_PREFIX = "netty-server-handler";
+    private final ExecutorService threadPool;
+    private final RequestHandler requestHandler;
+
+    public NettyServerHandler() {
+        requestHandler = SingletonFactory.getInstance(RequestHandler.class);
         threadPool = ThreadPoolFactory.createDefaultThreadPool(THREAD_NAME_PREFIX);
     }
 
@@ -31,8 +34,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
             try {
                 logger.info("服务器接收到请求: {}", msg);
                 Object result = requestHandler.handle(msg);
-                ChannelFuture future = ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
-                future.addListener(ChannelFutureListener.CLOSE);
+                if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                    ctx.writeAndFlush(RpcResponse.success(result, msg.getRequestId()));
+                } else {
+                    logger.error("通道不可写");
+                }
             } finally {
                 ReferenceCountUtil.release(msg);
             }
