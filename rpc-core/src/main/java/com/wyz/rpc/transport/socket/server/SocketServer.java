@@ -10,6 +10,7 @@ import com.wyz.rpc.provider.ServiceProviderImpl;
 import com.wyz.rpc.registry.NacosServiceRegistry;
 import com.wyz.rpc.registry.ServiceRegistry;
 import com.wyz.rpc.serializer.CommonSerializer;
+import com.wyz.rpc.transport.AbstractRpcServer;
 import com.wyz.rpc.transport.RpcServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +24,10 @@ import java.util.concurrent.ExecutorService;
 /**
  * Socket方式远程方法调用的提供者（服务端）
  */
-public class SocketServer implements RpcServer {
+public class SocketServer extends AbstractRpcServer {
     private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
 
     private final ExecutorService threadPool;
-    ;
-    private final String host;
-    private final int port;
-    private final ServiceRegistry serviceRegistry;
-    private final ServiceProvider serviceProvider;
     private final CommonSerializer serializer;
     private final RequestHandler requestHandler = new RequestHandler();
 
@@ -46,17 +42,7 @@ public class SocketServer implements RpcServer {
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
         this.serializer = CommonSerializer.getByCode(serializer);
-    }
-
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass) {
-        if (serializer == null) {
-            logger.error("未设置序列化器");
-            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
-        }
-        serviceProvider.addServiceProvider(service, serviceClass);
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        start();
+        scanServices();
     }
 
     @Override

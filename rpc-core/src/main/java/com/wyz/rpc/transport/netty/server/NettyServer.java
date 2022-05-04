@@ -2,15 +2,11 @@ package com.wyz.rpc.transport.netty.server;
 
 import com.wyz.rpc.codec.CommonDecoder;
 import com.wyz.rpc.codec.CommonEncoder;
-import com.wyz.rpc.enumeration.RpcError;
-import com.wyz.rpc.exception.RpcException;
 import com.wyz.rpc.hook.ShutdownHook;
-import com.wyz.rpc.provider.ServiceProvider;
 import com.wyz.rpc.provider.ServiceProviderImpl;
 import com.wyz.rpc.registry.NacosServiceRegistry;
-import com.wyz.rpc.registry.ServiceRegistry;
 import com.wyz.rpc.serializer.CommonSerializer;
-import com.wyz.rpc.transport.RpcServer;
+import com.wyz.rpc.transport.AbstractRpcServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -18,19 +14,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
+public class NettyServer extends AbstractRpcServer {
 
-public class NettyServer implements RpcServer {
-    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
-
-    private final String host;
-    private final int port;
-
-    private final ServiceRegistry serviceRegistry;
-    private final ServiceProvider serviceProvider;
     private final CommonSerializer serializer;
 
     public NettyServer(String host, int port) {
@@ -43,17 +29,7 @@ public class NettyServer implements RpcServer {
         this.serviceRegistry = new NacosServiceRegistry();
         this.serviceProvider = new ServiceProviderImpl();
         this.serializer = CommonSerializer.getByCode(serializer);
-    }
-
-    @Override
-    public <T> void publishService(T service, Class<T> serviceClass) {
-        if (serializer == null) {
-            logger.error("未设置序列化器");
-            throw new RpcException(RpcError.SERIALIZER_NOT_FOUND);
-        }
-        serviceProvider.addServiceProvider(service, serviceClass);
-        serviceRegistry.register(serviceClass.getCanonicalName(), new InetSocketAddress(host, port));
-        start();
+        scanServices();
     }
 
     @Override

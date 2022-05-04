@@ -5,7 +5,7 @@ package com.wyz.rpc.provider;
  */
 public interface ServiceProvider {
     //注册服务信息
-    <T> void addServiceProvider(T service, Class<T> serviceClass);
+    <T> void addServiceProvider(T service, String serviceName);
     //获取服务信息
     Object getServiceProvider(String serviceName);
 }
